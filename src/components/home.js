@@ -67,14 +67,14 @@ export class Home extends React.Component {
     this.autoQuery();
   }
 
-  async autoQuery() {
+  async autoQuery() { //自动获取信息并查询成绩
     let token = JSON.stringify(Miracle.getData())!=='{}' ? Miracle.getData().user.token : '';
     const res =await axios({
       url:'/api/cet/zkzh',
       method:"get",
       headers: { Authorization: token }
     }); 
-    if(res.data.status === 1 ||res.data.data === 2 ){ // 查询成功,可获取准考证好
+    if(res.data.status === 1 ||res.data.data === 2 ){ // 查询成功,可获取准考证号
       const zkzh = res.data.data[0].zkzh
       const name = res.data.data[0].xm
       const examType = res.data.data[0].kslb;
