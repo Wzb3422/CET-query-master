@@ -41,6 +41,7 @@ export class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      doAutoQuery: true,
       isApp,
       noName: true,
       noZkzh: true,
@@ -60,21 +61,21 @@ export class Home extends React.Component {
     this.getCodeImgUrl = this.getCodeImgUrl.bind(this);
     this.isDrawback = this.isDrawback.bind(this);
     this.autoQuery = this.autoQuery.bind(this);
-  }
-
-  componentDidMount() {
-    //自动查询
-    this.autoQuery();
+    this.getzkzh = this.getzkzh.bind(this);
   }
 
   async autoQuery() { //自动获取信息并查询成绩
-    let token = JSON.stringify(Miracle.getData())!=='{}' ? Miracle.getData().user.token : '';
+    let token = await JSON.stringify(Miracle.getData())!=='{}' ? Miracle.getData().user.token : '';
     const res =await axios({
       url:'/api/cet/zkzh',
       method:"get",
-      headers: { Authorization: token }
+      headers: { Authorization: token }//我也不知道为什么这样
     }); 
     if(res.data.status === 1 ||res.data.data === 2 ){ // 查询成功,可获取准考证号
+      this.setState({
+        autoQuery: false
+      })
+      console.log('可查准考证号')
       const zkzh = res.data.data[0].zkzh
       const name = res.data.data[0].xm
       const examType = res.data.data[0].kslb;
@@ -296,18 +297,24 @@ export class Home extends React.Component {
   //获取准考证号函数
   async getzkzh() {
     let token = JSON.stringify(Miracle.getData())!=='{}' ? Miracle.getData().user.token : '';
-    const res =await axios({
+    const res = await axios({
       url:'/api/cet/zkzh',
       method:"get",
       headers: { Authorization: token }
     }); 
+    console.log('已发请求')
+    console.log(res);
     if(res.data.status === 1){ // 查询成功,只有笔试
       const zkzh = res.data.data[0].zkzh
       const name = res.data.data[0].xm
       const examType = res.data.data[0].kslb;
       this.setState({
         nameValue: name,
-        zkzhValue: zkzh
+        zkzhValue: zkzh,
+        noName: false,
+        noZkzh: false,
+        name,
+        zkzh
       })
       /* Modal.success({
         centered: true,
@@ -321,7 +328,7 @@ export class Home extends React.Component {
         onOk() {
         },
       }); */
-      Modal.confirm({
+      Modal.success({
         okText: '谢谢啦~',
         cancelText: '不要帮我填写!',
         icon:<Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />,
@@ -334,10 +341,6 @@ export class Home extends React.Component {
         onOk() {
         },
         onCancel() {
-          this.setState({
-            nameValue: '',
-            zkzhValue: ''
-          })
         },
       });
     } else if(res.data.status === 2 ) { // 查询成功, 笔试+口试
@@ -347,13 +350,14 @@ export class Home extends React.Component {
       const writtenExamType = res.data.data[0].kslb;
       const oralExamType = res.data.data[1].kslb;
       this.setState({
-        nameValue: name,
-        zkzhValue: writtenExamzkzh
+        noZkzh: false,
+        noName: false,
+        name,
+        zkzh: writtenExamzkzh
       })
-      Modal.confirm({
+      Modal.success({
         centered: true,
         okText: '谢谢啦~',
-        cancelText: '不要帮我填写!',
         icon: <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />,
         title: '查询成功!',
         content: (
@@ -367,10 +371,6 @@ export class Home extends React.Component {
         onOk() {
         },
         onCancel() {
-          this.setState({
-            nameValue: '',
-            zkzhValue: ''
-          })
         },
       });
     }
@@ -478,6 +478,8 @@ export class Home extends React.Component {
   }
 
   render() {
+    this.autoQuery();
+    console.log('haha')
     const hasCode = this.state.hasCodeImg;
     let codeButton;
     if(hasCode) {
@@ -493,8 +495,8 @@ export class Home extends React.Component {
           <img src={logo} />
         </div>
         <div className="home-input-box">
-          <Input icon={zkzIcon} onInputChange={this.handleZkzChange} placeholder="输入准考证号" value={this.state.zkzhValue} />
-          <Input icon={nameIcon} placeholder="输入姓名" onInputChange={this.handleNameChange} value={this.state.nameValue} />
+          <Input icon={zkzIcon} onInputChange={this.handleZkzChange} placeholder="输入准考证号" value={this.state.zkzh} />
+          <Input icon={nameIcon} placeholder="输入姓名" onInputChange={this.handleNameChange} value={this.state.name} />
           {/* <CodeInput icon={codeIcon} code={code} getCode={this.getCode} onInputChange={this.handleCodeChange} /> */}
           <div className="input-code-box">
             <div className="input-icon-box">

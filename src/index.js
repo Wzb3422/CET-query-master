@@ -10,7 +10,7 @@ import axios from 'axios'
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import 'moment/locale/zh-cn';
 
-axios.defaults.baseURL = 'http://47.103.220.76:80'
+axios.defaults.baseURL = 'https://os.ncuos.com' /* 'http://47.103.220.76:80' */
 
 // 全局axios拦截器设置
 axios.defaults.timeout = 5000;
